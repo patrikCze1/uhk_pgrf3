@@ -87,27 +87,36 @@ function start() {
     file.onchange = () => {
         src = file.value;
         console.log(src);
-        loadTexture(gl, image, src)
+        loadTexture(gl, image, src);
+        resize(image);
     }
 
     picture.onchange = () => {
         src = picture.value;
         console.log(src);
-        loadTexture(gl, image, src)
+        loadTexture(gl, image, src);
+        resize(image);
     }
 
     dropdown.onchange = () => {
         mode = parseInt(dropdown.value);
     }
     
-    var dstWidth = image.width;
-    var dstHeight = image.height;
+    
+    let clipX = gl.canvas.width  *  2 - 1;
+    let clipY = gl.canvas.height * -2 + 1;
+    let clipWidth;
+    let clipHeight;
 
-    // convert dst pixel coords to clipspace coords      
-    var clipX = gl.canvas.width  *  2 - 1;
-    var clipY = gl.canvas.height * -2 + 1;
-    var clipWidth = dstWidth  / gl.canvas.width  *  2;
-    var clipHeight = dstHeight / gl.canvas.height * -2;
+    function resize(image) {
+        const dstWidth = image.width;
+        const dstHeight = image.height;
+    
+        // convert dst pixel coords to clipspace coords      
+        clipWidth = dstWidth  / gl.canvas.width  *  2;
+        clipHeight = dstHeight / gl.canvas.height * -2;
+    }
+    resize(image);
 
     //
     // draw scene
@@ -132,6 +141,11 @@ function start() {
         }
         draw();
     }    
+
+    window.onresize = (e) => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
 
     function draw() {
         // current size of screen
@@ -167,6 +181,8 @@ function start() {
         requestAnimationFrame(draw);
     }    
 }
+
+
 
 function loadTexture(gl, image, url) {
     const texture = gl.createTexture();
