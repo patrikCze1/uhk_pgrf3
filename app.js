@@ -11,8 +11,6 @@ function start() {
         return;
     }
 
-    //const texture = loadTexture(gl, './texture/texture.jpg');
-
     const pr = new Program();
 
     //
@@ -41,6 +39,7 @@ function start() {
     const textureLocation = gl.getUniformLocation(program, 'tex');
     const resolution = gl.getUniformLocation(program, "uMatrix");
     const programMode = gl.getUniformLocation(program, "mode");
+    const rangeLocation = gl.getUniformLocation(program, "range");
 
     //
     // Create a vertex array object
@@ -78,17 +77,17 @@ function start() {
     //
     // variables
     //
-    const picture = document.getElementById('picture');    
-    const file = document.getElementById('file');
+    const picture = document.getElementById('picture');   
+    const range = document.getElementById('range');
     const dropdown = document.getElementById('mode');
     let src = picture.value;
     let mode = parseInt(dropdown.value);
+    let r = range.value;
+    range.disabled = true;
 
-    file.onchange = () => {
-        src = file.value;
-        console.log(src);
-        loadTexture(gl, image, src);
-        resize(image);
+    range.onchange = () => {
+        r = parseInt(range.value);
+        console.log(r);
     }
 
     picture.onchange = () => {
@@ -100,21 +99,26 @@ function start() {
 
     dropdown.onchange = () => {
         mode = parseInt(dropdown.value);
+
+        if (mode == 2 || mode == 8) {
+            range.disabled = false;
+        } else {
+            range.disabled = true;
+        }
     }
     
+    window.onresize = (e) => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
     
-    let clipX = gl.canvas.width  *  2 - 1;
-    let clipY = gl.canvas.height * -2 + 1;
     let clipWidth;
     let clipHeight;
 
     function resize(image) {
-        const dstWidth = image.width;
-        const dstHeight = image.height;
-    
         // convert dst pixel coords to clipspace coords      
-        clipWidth = dstWidth  / gl.canvas.width  *  2;
-        clipHeight = dstHeight / gl.canvas.height * -2;
+        clipWidth = image.width  / gl.canvas.width * 2;
+        clipHeight = image.height / gl.canvas.height * -2;
     }
     resize(image);
 
@@ -123,36 +127,12 @@ function start() {
     //  
     requestAnimationFrame(draw);
 
-    //
-    // key handler
-    //
-    window.onkeyup = (e) => {
-        if (e.keyCode == 32) { // space
-        }
-        if (e.keyCode == 68) { // d
-        }
-        if (e.keyCode == 65) { // a
-        }
-        if (e.keyCode == 87) { // w
-        }        
-        if (e.keyCode == 83) { // s
-        }
-        if (e.keyCode == 88) { // x
-        }
-        draw();
-    }    
-
-    window.onresize = (e) => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-
     function draw() {
         // current size of screen
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     
         // clear canvas
-        gl.clearColor(1.0, 1.0, 1.0, 1.0); // rgba
+        gl.clearColor(0.95, 0.95, 0.95, 1.0); // rgba
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         // which program gl should use
@@ -167,12 +147,14 @@ function start() {
         gl.uniform1i(textureLocation, 0); //texture
         //mode
         gl.uniform1i(programMode, mode);
+        // range 
+        gl.uniform1i(rangeLocation, r);
 
         //resolution
         gl.uniformMatrix3fv(resolution, false, [
             clipWidth, 0, 0,
             0, clipHeight, 0,
-            clipX, clipY, 1,
+            0, 0, 1,
           ]);
 
         
@@ -181,8 +163,6 @@ function start() {
         requestAnimationFrame(draw);
     }    
 }
-
-
 
 function loadTexture(gl, image, url) {
     const texture = gl.createTexture();
@@ -210,10 +190,6 @@ function loadTexture(gl, image, url) {
     }, 80);
   
     return image;
-  }
-
-  function isPowerOf2(value) {
-    return (value & (value - 1)) == 0;
   }
 
 start();

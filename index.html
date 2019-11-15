@@ -29,7 +29,21 @@
         <option value="8">Halftone</option>
     </select>
 
-    <input type="file" id="file" accept="image/png, image/jpeg">
+    <input type="range" list="tickmarks" value="40.0" id="range">
+
+    <datalist id="tickmarks">
+        <option value="0"></option>
+        <option value="10"></option>
+        <option value="20"></option>
+        <option value="30"></option>
+        <option value="40"></option>
+        <option value="50"></option>
+        <option value="60"></option>
+        <option value="70"></option>
+        <option value="80"></option>
+        <option value="90"></option>
+        <option value="100"></option>
+    </datalist>
 
     <canvas id="canvas"></canvas>
 
@@ -55,6 +69,7 @@
 
         uniform sampler2D tex;
         uniform int mode;
+        uniform int range;
 
         const float m2x2[4] = float[] (
             0.0, 2.0,
@@ -129,9 +144,9 @@
 
         vec3 halftone() {
             vec4 texColor = texture(tex, texCoord);
-            float frequency = 50.0;
+            float r = float(range);
 
-            vec2 nearest = 2.0 * fract(frequency * texCoord) - 1.0;
+            vec2 nearest = 2.0 * fract(r * texCoord) - 1.0;
             float dist = length(nearest);
             float radius = 1.0 - texColor.r;
             
@@ -156,8 +171,9 @@
             } else if (mode == 2) {
                 color = texture(tex, texCoord);
                 float val = color.r;
+                float r = float(range) / 100.0;
 
-                if(val > 0.5) {
+                if(val > r) {
                     outColor = vec4(1);
                 } else {
                     outColor = vec4(vec3(0), 1);
