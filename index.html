@@ -8,42 +8,47 @@
     <title>Dithering</title>
 </head>
 <body>
-    <select name="picture" id="picture">
-        <option value="./texture/david.png">David</option>
-        <option value="./texture/lenna.png">Lenna</option>
-        <option value="./texture/einstein.jpg">Einstein</option>
-        <option value="./texture/bird.png">Bird</option>
-        <option value="./texture/polygon.jpg">Polygons</option>
-        <option value="./texture/scale.jpg">Scale</option>
-    </select>
+    <div id="settings">
+        
+        <select name="picture" id="picture">
+            <option value="./texture/david.png">David</option>
+            <option value="./texture/lenna.png">Lenna</option>
+            <option value="./texture/einstein.jpg">Einstein</option>
+            <option value="./texture/bird.png">Bird</option>
+            <option value="./texture/polygon.jpg">Polygons</option>
+            <option value="./texture/scale.jpg">Scale</option>
+            <option value="./texture/tex.jpg">me</option>
+        </select>
+        
+        <select name="mode" id="mode">
+            <option value="0">Normal</option>
+            <option value="1">Grayscale</option>
+            <option value="2">Threshold</option>
+            <option value="3">Random</option>
+            <option value="4">Bayer matrix 2x2</option>
+            <option value="5">Bayer matrix 3x3</option>
+            <option value="6">Bayer matrix 4x4</option>
+            <option value="7">Bayer matrix 8x8</option>
+            <option value="8">My matrix 5x5</option>
+            <option value="9">Halftone</option>
+        </select>
+        
+        <input type="range" list="tickmarks" value="40.0" id="range">
 
-    <select name="mode" id="mode">
-        <option value="0">Normal</option>
-        <option value="1">Grayscale</option>
-        <option value="2">Threshold</option>
-        <option value="3">Random</option>
-        <option value="4">Bayer matrix 2x2</option>
-        <option value="5">Bayer matrix 3x3</option>
-        <option value="6">Bayer matrix 4x4</option>
-        <option value="7">Bayer matrix 8x8</option>
-        <option value="8">Halftone</option>
-    </select>
-
-    <input type="range" list="tickmarks" value="40.0" id="range">
-
-    <datalist id="tickmarks">
-        <option value="0"></option>
-        <option value="10"></option>
-        <option value="20"></option>
-        <option value="30"></option>
-        <option value="40"></option>
-        <option value="50"></option>
-        <option value="60"></option>
-        <option value="70"></option>
-        <option value="80"></option>
-        <option value="90"></option>
-        <option value="100"></option>
-    </datalist>
+        <datalist id="tickmarks">
+            <option value="0"></option>
+            <option value="10"></option>
+            <option value="20"></option>
+            <option value="30"></option>
+            <option value="40"></option>
+            <option value="50"></option>
+            <option value="60"></option>
+            <option value="70"></option>
+            <option value="80"></option>
+            <option value="90"></option>
+            <option value="100"></option>
+        </datalist>
+    </div>
 
     <canvas id="canvas"></canvas>
 
@@ -56,9 +61,11 @@
         out vec2 texCoord;
          
         void main() {
+            float x = inPosition.x * 2.0 - 1.0;
+            float y = inPosition.y * 2.0 - 1.0;
 
             texCoord = inPosition;
-            gl_Position = vec4(uMatrix * vec3(inPosition, 0.0), 1.0);
+            gl_Position = vec4(uMatrix * vec3(x, y, 0.0), 1.0);
         }
     </script>
 
@@ -89,14 +96,22 @@
             15.0, 7.0,  13.0, 5.0
         );
 
+        const float m5x5[25] = float[](
+            0.0,  15.0, 3.0,  12.0,  8.0,
+            6.0,  22.0,  14.0,  9.0, 13.0,
+            3.0,  5.0,  1.0,  18.0, 7.0,
+            8.0, 7.0,  20.0, 5.0,  16.0,
+            9.0,  22.0, 17.0, 6.0, 24.0
+        );
+
         const float m8x8[64] = float[](
-             0.0, 32.0, 8.0, 40.0, 2.0, 34.0, 10.0, 42.0, 
+             0.0, 32.0, 8.0,  40.0, 2.0,  34.0, 10.0, 42.0, 
             48.0, 16.0, 56.0, 24.0, 50.0, 18.0, 58.0, 26.0, 
-            12.0, 44.0, 4.0, 36.0, 14.0, 46.0, 6.0, 38.0, 
+            12.0, 44.0, 4.0,  36.0, 14.0, 46.0, 6.0,  38.0, 
             60.0, 28.0, 52.0, 20.0, 62.0, 30.0, 54.0, 22.0, 
-             3.0, 35.0, 11.0, 43.0, 1.0, 33.0, 9.0, 41.0, 
+             3.0, 35.0, 11.0, 43.0, 1.0,  33.0, 9.0,  41.0, 
             51.0, 19.0, 59.0, 27.0, 49.0, 17.0, 57.0, 25.0,
-            15.0, 47.0, 7.0, 39.0, 13.0, 45.0, 5.0, 37.0,
+            15.0, 47.0, 7.0,  39.0, 13.0, 45.0, 5.0,  37.0,
             63.0, 31.0, 55.0, 23.0, 61.0, 29.0, 53.0, 21.0
         );
 
@@ -128,6 +143,9 @@
 
             } else if (size == 4.0) {
                 val = m4x4[y + x * 4] / 16.0;
+
+            } else if (size == 5.0) {
+                val = m5x5[y + x * 5] / 25.0;
 
             } else if (size == 8.0) {
                 val = m8x8[y + x * 8] / 64.0;
@@ -206,7 +224,11 @@
                 int ditherColor = dither(8.0);
                 outColor = vec4(vec3(ditherColor), 1.0);
 
-            } else if (mode == 8) { // halftone
+            } else if (mode == 8) { // 5x5
+                int ditherColor = dither(5.0);
+                outColor = vec4(vec3(ditherColor), 1.0);
+
+            } else if (mode == 9) { // halftone
                 vec3 finalColor = halftone();
                 outColor = vec4(finalColor, 1.0);
 

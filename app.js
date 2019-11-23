@@ -100,7 +100,7 @@ function start() {
     dropdown.onchange = () => {
         mode = parseInt(dropdown.value);
 
-        if (mode == 2 || mode == 8) {
+        if (mode == 2 || mode == 9) {
             range.disabled = false;
         } else {
             range.disabled = true;
@@ -112,13 +112,26 @@ function start() {
         canvas.height = window.innerHeight;
     }
     
-    let clipWidth;
-    let clipHeight;
+    let imgWidth = 0.8;
+    let imgHeightScale = 0.5;
 
     function resize(image) {
         // convert dst pixel coords to clipspace coords      
-        clipWidth = image.width  / gl.canvas.width * 2;
+        clipWidth = image.width / gl.canvas.width * 2;
         clipHeight = image.height / gl.canvas.height * -2;
+        if (image.width > image.height) {
+            imgWidth = image.width / gl.canvas.width;
+            imgHeightScale = image.width / gl.canvas.width;
+        } else {
+            if (image.height > gl.canvas.height) {
+                imgWidth = image.width / gl.canvas.width;
+                imgHeightScale = 1;
+            } else {
+                imgWidth = image.height / gl.canvas.height;
+                imgHeightScale = image.height / gl.canvas.height;
+            }
+        }
+        
     }
     resize(image);
 
@@ -152,8 +165,8 @@ function start() {
 
         //resolution
         gl.uniformMatrix3fv(resolution, false, [
-            clipWidth, 0, 0,
-            0, clipHeight, 0,
+            imgHeightScale, 0, 0,
+            0, -imgWidth, 0,
             0, 0, 1,
           ]);
 
@@ -168,7 +181,7 @@ function loadTexture(gl, image, url) {
     const texture = gl.createTexture();
     
     image.src = url;
-    image.onload = setTimeout(function() {
+    image.onload = function() {
         gl.bindTexture(gl.TEXTURE_2D, texture);
 
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -187,7 +200,7 @@ function loadTexture(gl, image, url) {
                         srcFormat,
                         srcType,
                         image);
-    }, 80);
+    }
   
     return image;
   }
