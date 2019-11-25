@@ -92,9 +92,7 @@ function start() {
 
     picture.onchange = () => {
         src = picture.value;
-        console.log(src);
         loadTexture(gl, image, src);
-        resize(image);
     }
 
     dropdown.onchange = () => {
@@ -111,29 +109,9 @@ function start() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
     }
-    
-    let imgWidth = 0.8;
-    let imgHeightScale = 0.5;
 
-    function resize(image) {
-        // convert dst pixel coords to clipspace coords      
-        clipWidth = image.width / gl.canvas.width * 2;
-        clipHeight = image.height / gl.canvas.height * -2;
-        if (image.width > image.height) {
-            imgWidth = image.width / gl.canvas.width;
-            imgHeightScale = image.width / gl.canvas.width;
-        } else {
-            if (image.height > gl.canvas.height) {
-                imgWidth = image.width / gl.canvas.width;
-                imgHeightScale = 1;
-            } else {
-                imgWidth = image.height / gl.canvas.height;
-                imgHeightScale = image.height / gl.canvas.height;
-            }
-        }
-        
-    }
-    resize(image);
+    let imgWidth = 1;
+    let imgHeight = 1;
 
     //
     // draw scene
@@ -141,6 +119,12 @@ function start() {
     requestAnimationFrame(draw);
 
     function draw() {
+        function resize(image) {
+            canvas.width = image.width;
+            canvas.height = image.height;
+        }
+        resize(image);
+
         // current size of screen
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     
@@ -154,8 +138,6 @@ function start() {
         // bind attribute/buffer
         gl.bindVertexArray(va);
 
-        console.log(mode)
-
         // texture
         gl.uniform1i(textureLocation, 0); //texture
         //mode
@@ -165,7 +147,7 @@ function start() {
 
         //resolution
         gl.uniformMatrix3fv(resolution, false, [
-            imgHeightScale, 0, 0,
+            imgHeight, 0, 0,
             0, -imgWidth, 0,
             0, 0, 1,
           ]);
